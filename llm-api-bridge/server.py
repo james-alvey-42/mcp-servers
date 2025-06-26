@@ -11,7 +11,7 @@ from typing import List, Dict, Optional
 from mcp.server.fastmcp import FastMCP
 
 # Import our provider system
-from providers import LLMProvider, LLMResponse, LLMMessage, OpenAIProvider
+from providers import LLMProvider, LLMResponse, LLMMessage, OpenAIProvider, GeminiProvider
 
 # Create the FastMCP server instance
 # The name "LLM API Bridge" will be displayed in MCP clients
@@ -49,8 +49,13 @@ def _get_provider(provider_name: str) -> LLMProvider:
         if not api_key:
             raise ValueError("OPENAI_API_KEY environment variable is required for OpenAI provider")
         provider = OpenAIProvider(api_key)
+    elif provider_name == "gemini":
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY environment variable is required for Gemini provider")
+        provider = GeminiProvider(api_key)
     else:
-        raise ValueError(f"Unsupported provider: {provider_name}")
+        raise ValueError(f"Unsupported provider: {provider_name}. Supported providers: openai, gemini")
     
     # Cache the provider for future use
     _providers[provider_name] = provider
@@ -172,19 +177,24 @@ This server provides unified access to multiple LLM APIs through standardized to
 
 🌐 SUPPORTED PROVIDERS:
 - OpenAI (GPT models) - API Key: {openai_key_status}
-- Google Gemini (coming soon) - API Key: {gemini_key_status}
+- Google Gemini (Gemini models) - API Key: {gemini_key_status}
 
-📋 USAGE EXAMPLE:
-Call an LLM:
+📋 USAGE EXAMPLES:
+Call OpenAI:
   provider: "openai"
   model: "gpt-3.5-turbo"
+  messages: [{{"role": "user", "content": "Hello!"}}]
+
+Call Gemini:
+  provider: "gemini"
+  model: "gemini-1.5-flash"
   messages: [{{"role": "user", "content": "Hello!"}}]
 
 🔑 ENVIRONMENT VARIABLES:
 - OPENAI_API_KEY: {openai_key_status}
 - GEMINI_API_KEY: {gemini_key_status}
 
-💡 TIP: Use list_models("openai") to see available models.
+💡 TIP: Use list_models("openai") or list_models("gemini") to see available models.
 """
 
 
@@ -204,10 +214,10 @@ def providers_status() -> Dict[str, Dict[str, str]]:
             "features": "chat_completions, model_listing"
         },
         "gemini": {
-            "status": "coming_soon",
+            "status": "available" if os.getenv('GEMINI_API_KEY') else "missing_api_key",
             "api_key": "configured" if os.getenv('GEMINI_API_KEY') else "not_configured", 
-            "models_supported": "gemini-pro (planned)",
-            "features": "planned"
+            "models_supported": "gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash",
+            "features": "chat_completions, model_listing"
         }
     }
 

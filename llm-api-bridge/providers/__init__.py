@@ -8,10 +8,12 @@ easy to switch between providers or compare outputs.
 
 from .base import LLMProvider, LLMResponse, LLMMessage
 from .openai_provider import OpenAIProvider
+from .gemini_provider import GeminiProvider
 
 __all__ = [
     "LLMProvider",
     "LLMResponse", 
     "LLMMessage",
     "OpenAIProvider",
+    "GeminiProvider",
 ]

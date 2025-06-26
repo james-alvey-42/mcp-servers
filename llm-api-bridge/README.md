@@ -85,7 +85,7 @@ Use the `compare_models` prompt:
 ```json
 {
   "question": "Explain quantum computing",
-  "models": "gpt-3.5-turbo,gpt-4"
+  "models": "gpt-3.5-turbo,gpt-4,gemini-1.5-flash"
 }
 ```
 
@@ -96,12 +96,19 @@ Use the `compare_models` prompt:
 }
 ```
 
+Or for Gemini:
+```json
+{
+  "provider": "gemini"
+}
+```
+
 ## 🔧 Supported Providers
 
 | Provider | Models | Status | API Key Required |
 |----------|--------|--------|------------------|
 | OpenAI | GPT-4, GPT-3.5-turbo, GPT-4-turbo | ✅ Available | `OPENAI_API_KEY` |
-| Google Gemini | Gemini-Pro | 🚧 Coming Soon | `GEMINI_API_KEY` |
+| Google Gemini | Gemini-1.5-Flash, Gemini-1.5-Pro, Gemini-2.0-Flash | ✅ Available | `GEMINI_API_KEY` |
 
 ## 📚 Documentation
 
