@@ -1,0 +1,6 @@
+mcp[cli]
+httpx
+pydantic
+python-dotenv
+feedparser
+PyPDF2

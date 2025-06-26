@@ -29,16 +29,29 @@ mcp install server.py --name "LLM API Bridge"
 
 ---
 
-### ArXiv Paper Downloader 🚧 Planned
-**Location:** `arxiv-downloader/` (coming soon)
+### ArXiv Paper Downloader ✅ Complete
+**Location:** `arxiv-downloader/`
 
 Download and manage academic papers from ArXiv with full metadata and contextual detail.
 
-**Planned Features:**
+**Features:**
 - Search ArXiv by keywords, authors, categories
 - Download PDFs with metadata extraction
 - Citation management and bibliography tools
-- Local paper database with full-text search
+- Paper analysis and structured prompts
+- Category filtering and advanced search syntax
+- Local paper storage with organized file management
+
+**Quick Start:**
+```bash
+cd arxiv-downloader
+pip install -r requirements.txt
+mcp install server.py --name "ArXiv Paper Downloader"
+```
+
+**Tools:** `search_papers`, `get_paper_info`, `download_paper`, `list_categories`, `echo_test`  
+**Resources:** Server info, download status  
+**Prompts:** Paper analysis, citation formatting
 
 ---
 
@@ -104,10 +117,10 @@ Review the comprehensive documentation in `docs/` for advanced usage, security b
 - [ ] Additional LLM providers (Claude, local models)
 - [ ] Enhanced caching and optimization
 
-### Phase 3: Research Tools 📅 Planned
-- [ ] ArXiv Paper Downloader server
-- [ ] Academic research workflow integration
-- [ ] Citation and bibliography management
+### Phase 3: Research Tools ✅ Complete
+- [x] ArXiv Paper Downloader server
+- [x] Academic research workflow integration
+- [x] Citation and bibliography management
 
 ### Phase 4: Productivity Integration 📅 Planned
 - [ ] Apple Reminders interface
