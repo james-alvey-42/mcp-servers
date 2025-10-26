@@ -6,8 +6,8 @@ It handles converting our standard format to Gemini's format and back.
 """
 
 import httpx
-from typing import List, Optional, Dict, Any
-from .base import LLMProvider, LLMResponse, LLMMessage, LLMUsage
+from typing import List, Optional, Dict, Any, Union
+from .base import LLMProvider, LLMResponse, LLMMessage, LLMUsage, ContentPart
 
 
 class GeminiProvider(LLMProvider):
@@ -33,41 +33,86 @@ class GeminiProvider(LLMProvider):
             "Content-Type": "application/json",
         }
     
+    def _convert_content_to_parts(self, content: Union[str, List[ContentPart]]) -> List[Dict[str, Any]]:
+        """
+        Convert message content to Gemini parts format.
+
+        Handles both simple text strings and multi-modal content with images.
+
+        Args:
+            content: Either a string or list of ContentPart objects
+
+        Returns:
+            List of Gemini part objects
+        """
+        # Simple text content (backward compatible)
+        if isinstance(content, str):
+            return [{"text": content}]
+
+        # Multi-modal content
+        parts = []
+        for part in content:
+            if part.type == "text":
+                parts.append({"text": part.text})
+
+            elif part.type == "image_url":
+                # For image URLs, fetch and convert to inline data
+                # Note: Gemini prefers inline data over URLs
+                parts.append({
+                    "text": f"[Image from URL: {part.url}]"
+                })
+                # TODO: Could fetch URL and convert to inline_data
+
+            elif part.type == "image_base64":
+                # Inline base64 image
+                parts.append({
+                    "inline_data": {
+                        "mime_type": part.mime_type or "image/png",
+                        "data": part.data
+                    }
+                })
+
+        return parts
+
     def _convert_messages_to_gemini(self, messages: List[LLMMessage]) -> List[Dict[str, Any]]:
         """
         Convert our standard message format to Gemini's format.
-        
-        Gemini expects a "contents" array with "parts" containing text.
-        We need to handle the role-based conversation structure.
-        
+
+        Gemini expects a "contents" array with "parts" that can contain text,
+        inline images, and other media types.
+
+        Supports multi-modal content including images.
+
         Args:
             messages: List of our standard LLMMessage objects
-            
+
         Returns:
             List of content objects in Gemini's expected format
         """
         gemini_contents = []
-        
+
         for message in messages:
+            # Convert content to parts (handles both text and multi-modal)
+            parts = self._convert_content_to_parts(message.content)
+
             # Gemini uses "user" and "model" roles, and system messages are handled differently
             if message.role == "system":
-                # For system messages, we'll prepend them to the first user message
-                # or create a special system content block
+                # For system messages, prepend "System instructions:" to make it clear
                 gemini_contents.append({
                     "role": "user",
-                    "parts": [{"text": f"System instructions: {message.content}"}]
+                    "parts": [{"text": f"System instructions: {parts[0].get('text', '')}"}]
                 })
             elif message.role == "user":
                 gemini_contents.append({
-                    "role": "user", 
-                    "parts": [{"text": message.content}]
+                    "role": "user",
+                    "parts": parts
                 })
             elif message.role == "assistant":
                 gemini_contents.append({
                     "role": "model",
-                    "parts": [{"text": message.content}]
+                    "parts": parts
                 })
-        
+
         return gemini_contents
     
     async def call(
@@ -225,9 +270,21 @@ class GeminiProvider(LLMProvider):
                     model_name = model_name[7:]  # Remove "models/" prefix
                 
                 # Filter for text generation models (exclude embedding models, etc.)
-                if (model_name and 
+                if (model_name and
                     "generateContent" in model.get("supportedGenerationMethods", []) and
                     any(gen_model in model_name.lower() for gen_model in ["gemini"])):
                     all_models.append(model_name)
-            
-            return sorted(all_models)
+
+            # Sort with newest/most capable first
+            # Priority order: gemini-2.5 > gemini-2.0 > gemini-1.5 > gemini-1.0
+            def model_sort_key(name):
+                if "2.5" in name:
+                    return (2.5, "flash-thinking" in name, "pro" in name)
+                elif "2.0" in name:
+                    return (2.0, "flash-thinking" in name, "pro" in name)
+                elif "1.5" in name:
+                    return (1.5, "flash" in name, "pro" in name)
+                else:
+                    return (1.0, False, False)
+
+            return sorted(all_models, key=model_sort_key, reverse=True)

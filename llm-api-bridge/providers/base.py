@@ -7,19 +7,47 @@ By using a common interface, we can easily switch between providers or add new o
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Union
 from pydantic import BaseModel, Field
+
+
+class ContentPart(BaseModel):
+    """
+    Represents a single part of multi-modal content.
+
+    Can be text, an inline image, an image URL, or other media types.
+    """
+    type: str = Field(description="Content type: 'text', 'image_url', 'image_base64'")
+
+    # For text content
+    text: Optional[str] = Field(default=None, description="Text content")
+
+    # For image URLs
+    url: Optional[str] = Field(default=None, description="Image URL")
+
+    # For inline base64 images
+    data: Optional[str] = Field(default=None, description="Base64-encoded image data")
+    mime_type: Optional[str] = Field(default=None, description="MIME type (e.g., 'image/png', 'image/jpeg')")
+
+    # For video/audio (future support)
+    # video_url, audio_data, etc. can be added here
 
 
 class LLMMessage(BaseModel):
     """
     Represents a single message in a conversation.
-    
+
     This is our standardized message format that works across all providers.
     Each provider will convert this to their specific format.
+
+    Supports both simple text messages and multi-modal content (text + images).
     """
     role: str = Field(description="Message role: 'user', 'assistant', or 'system'")
-    content: str = Field(description="The text content of the message")
+
+    # Support both simple string content (backward compatible) and multi-part content
+    content: Union[str, List[ContentPart]] = Field(
+        description="Message content - either a string for text-only, or a list of ContentPart for multi-modal"
+    )
 
 
 class LLMUsage(BaseModel):

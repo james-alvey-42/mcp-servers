@@ -1,0 +1,15 @@
+# Python bytecode/cache (match in any subfolder)
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.pyc
+
+# macOS Finder/metadata (match in any subfolder)
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/Icon?
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/server.cpython-311.pyc

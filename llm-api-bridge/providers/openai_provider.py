@@ -175,14 +175,24 @@ class OpenAIProvider(LLMProvider):
             # OpenAI returns many models, but we only want the ones suitable for chat
             all_models = [model["id"] for model in data.get("data", [])]
 
-            # Filter for common chat models (you can expand this list)
+            # Filter for chat completion models
+            # Include GPT-4, GPT-4 Turbo, GPT-3.5, and o1 series
             chat_models = [
                 model
                 for model in all_models
                 if any(
                     chat_prefix in model
-                    for chat_prefix in ["gpt-4", "gpt-3.5-turbo", "gpt-4-turbo"]
+                    for chat_prefix in [
+                        "gpt-5",  # GPT-5 models
+                        "gpt-4o",  # GPT-4o models
+                        "gpt-4-turbo",  # GPT-4 Turbo
+                        "gpt-4",  # GPT-4 (including gpt-4-32k)
+                        "gpt-3.5-turbo",  # GPT-3.5 Turbo
+                        "o1-preview",  # o1 preview
+                        "o1-mini",  # o1 mini
+                        "o3-mini",  # o3 mini
+                    ]
                 )
             ]
 
-            return sorted(chat_models)
+            return sorted(chat_models, reverse=True)  # Most recent first

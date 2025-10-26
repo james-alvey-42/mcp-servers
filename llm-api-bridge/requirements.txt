@@ -2,3 +2,11 @@ mcp[cli]
 httpx
 pydantic
 python-dotenv
+Pillow
+tkinterdnd2
+
+# Note: We use httpx directly for all providers (OpenAI, Gemini, Anthropic)
+# instead of official SDK packages to keep dependencies minimal and maintain
+# consistent implementation patterns across all providers.
+# Pillow is used for logo display in the GUI chat application.
+# tkinterdnd2 is used for drag-and-drop file support in the GUI.
